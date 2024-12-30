@@ -14,7 +14,7 @@ In der Simulation wird für die Betrachtung der Linearität eine Eingangsspannun
 
 
 ## Ideal-Fall mit RunDown (Zeitmessung)
-Wenn wir die Eingangswiderstände (Rin, Rref+ und Rref-) und die Vref Spannungen als ideal annehmen, bekommen wir folgende Anweichung.
+Wenn wir die Eingangswiderstände (Rin, Rref+ und Rref-) und die Vref Spannungen als ideal annehmen, bekommen wir folgende Anweichung. ToDo Formel für Vin nochmal kontrollieren, da wir eine Abweichung von 30uV haben.
 
 integrator.VrefN = -7.04480 <br>
 integrator.VrefP = 7.04480 <br>
@@ -67,3 +67,14 @@ Einspeisen einer bekannten Spannung (𝑉cal) mit positivem und negativem Eingan
 Den systematischen Unterschied zwischen den gemessenen und relaen Wert ermitteln und gespeichert.
 
 ## Real-Fall mit RunDown (Zeitmessung) und Kalibierung
+
+Habe die Kalibrierung einmal in die Simulation eingbaut. Es kann gezeigt werden, dass der lineare Fehler verschwindet.
+
+![Mein Bild](doc\images\Abweichung_RunDown_Real_mit_Kalibrierung.png)
+
+## Realer Fall mit Charging-Injection
+
+Wir müssen uns bei einem Multi-Slope ADC nicht nur mit linearen Fehler sondern auch mit nicht linearen Fehlern beschäftigen. Die verwendeten Analogen-Schalter habe ein Eigenschaft die als **Charging-Injection** bezeichnet wird. Diese nicht gewollte Eigenschaft führt zu einem nicht linearen Fehler. In der Simulation kann auch dieser Fall betrachtet werden.
+
+
+![Mein Bild](doc\images\Abweichung_RunDown_Charing_Injection.png)
