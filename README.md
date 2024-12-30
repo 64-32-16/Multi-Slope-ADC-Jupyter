@@ -9,8 +9,7 @@ Mit der Simulation kann gezeigt werden, welche Fehlerquellen ein lineares oder n
 # Linearität
 
 ## Ideal
-Wenn wir die Eingangswiderstände (Rin, Rref+ und Rref-) und die Vref Spannungen als ideal annehmen.
-Folgende Wert wurden gewählt:
+Wenn wir die Eingangswiderstände (Rin, Rref+ und Rref-) und die Vref Spannungen als ideal annehmen, bekommen wir folgende Anweichung.
 
 integrator.VrefN = -7.04480
 integrator.VrefP = 7.04480
@@ -19,6 +18,8 @@ integrator.ChargingInjection = 0.000
 integrator.R_Vin   = 50.0 # k
 integrator.R_VrefN = 50.0 # k
 integrator.R_VrefP = 50.0 # k
+
+<img src="doc/images/Abweichung_RunDown_Ideal.png" alt="Bildbeschreibung" width="300" height="200">
 
 ![Mein Bild](doc/images/Abweichung_RunDown_Ideal.png)
 
