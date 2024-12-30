@@ -37,4 +37,4 @@ integrator.R_Vin   = 50.0 # k
 integrator.R_VrefN = 50.01 # k
 integrator.R_VrefP = 50.00 # k
 
-![Mein Bild](doc/images/Abweichung_RunDown_Real.png)
+![Mein Bild](doc/images/Abweichung_RunDown_real.png)
