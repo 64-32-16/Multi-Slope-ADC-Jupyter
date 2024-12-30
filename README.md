@@ -70,11 +70,11 @@ Den systematischen Unterschied zwischen den gemessenen und relaen Wert ermitteln
 
 Habe die Kalibrierung einmal in die Simulation eingbaut. Es kann gezeigt werden, dass der lineare Fehler verschwindet.
 
-![Mein Bild](doc\images\Abweichung_RunDown_Real_mit_Kalibrierung.png)
+![Mein Bild](doc/images/Abweichung_RunDown_Real_mit_Kalibrierung.png)
 
 ## Realer Fall mit Charging-Injection
 
 Wir müssen uns bei einem Multi-Slope ADC nicht nur mit linearen Fehler sondern auch mit nicht linearen Fehlern beschäftigen. Die verwendeten Analogen-Schalter habe ein Eigenschaft die als **Charging-Injection** bezeichnet wird. Diese nicht gewollte Eigenschaft führt zu einem nicht linearen Fehler. In der Simulation kann auch dieser Fall betrachtet werden.
 
 
-![Mein Bild](doc\images\Abweichung_RunDown_Charing_Injection.png)
+![Mein Bild](doc/images/Abweichung_RunDown_Charing_Injection.png)
