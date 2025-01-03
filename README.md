@@ -19,7 +19,7 @@ Eine gute Einführung in das Thema [Multi-Slope ADC](https://en.wikipedia.org/wi
 In der Simulation wird für die Betrachtung der Linearität eine Eingangsspannung Vin von -5.0V bis +5.0V in 0.5 V Schritten durchlaufen.
 
 
-<img src="doc/images/Integrator.png" alt="Beschreibung des Bildes" height="750">
+<img src="doc/images/Integrator.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
 
 
 ## Ideal-Fall mit RunDown (Zeitmessung)
