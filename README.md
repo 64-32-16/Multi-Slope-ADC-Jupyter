@@ -26,7 +26,9 @@ In der Simulation wird für die Betrachtung der Linearität eine Eingangsspannun
 
 
 ## Ideal-Fall mit RunDown (Zeitmessung)
-Wenn wir die Eingangswiderstände (Rin, Rref+ und Rref-) und die Vref Spannungen als ideal annehmen, bekommen wir folgende Anweichung. ToDo Formel für Vin nochmal kontrollieren, da wir eine Abweichung von 30uV haben.
+Wenn wir die Eingangswiderstände (Rin, Rref+ und Rref-) und die Vref Spannungen als ideal annehmen, bekommen wir folgende Anweichung. 
+
+12 Bit Resudual ADC
 
 integrator.VrefN = -7.04480 <br>
 integrator.VrefP = 7.04480 <br>
@@ -37,8 +39,11 @@ integrator.R_VrefN = 100.0 # k <br>
 integrator.R_VrefP = 100.0 # k <br>
 
 
-<img src="doc/images/Abweichung_RunDown_Ideal.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
+<img src="doc/images/Abweichung_RunDown_Ideal.png" alt="Beschreibung des Bildes" style="height:600px; width:auto;">
 
+Jetzt verwenden wir mal einen ADC mit einer 16 Bit Auflösung nach der RunUp-Phase und schauen uns die Auflösung an. Wie erwartet, wird die Auflösung deutlich besser. Ich würde bei einem Hardware-Desgin aber versuchen einen schnellen 12 Bit ADC, vielleicht direkt den ADC vom RP2040, zu verwenden.
+
+<img src="doc/images/Abweichung_RunDown_Ideal_16.png" alt="Beschreibung des Bildes" style="height:600px; width:auto;">
 
 ## Real-Fall mit RunDown (Zeitmessung)
 Da wir in der Realität jedoch Abweichungen in dem Widerständs-Array und in der +/-Vref-Spannung bekommen, erhalten wir eine lineare Abweichung. Selbst kleine unterschiede in den Widerständs-Array und +/-Vref-Spannungen führen zur einer linearen Abweichung.
