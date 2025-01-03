@@ -16,7 +16,7 @@ Die Darstellung der folgenden Diagramme basiert auf der Verwendung eines 12 bit 
 Eine gute Einführung in das Thema [Multi-Slope ADC](https://en.wikipedia.org/wiki/Integrating_ADC) gibt es auf Wikipedia
 
 
-<img src="doc/images/Integrator.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
+<img src="doc/images/Integrator.png" alt="Beschreibung des Bildes" style="height:300px; width:auto;">
 
 
 # Linearität
