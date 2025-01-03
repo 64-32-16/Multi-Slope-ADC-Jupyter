@@ -11,7 +11,7 @@ Der Messzyklus bei einer Taskfrequenz von 10 Mhz (100ns) ist somit ca. 100 ms
 
 Die Simulation unterscheidet grundsätzlich zwei Formen der RunDown-Phase. Einmal eine Zeitmessung nach der RunUp-Phase oder eine Restwert-Messung über einen Residual-ADC nach der RunUp-Phase.
 
-Die Darstellung der folgenden Diagramme basiert auf der Verwendung eines 12 bit Resudual ADC's für die Messung der Restspannung nach der RunUp-Phase.
+Die Darstellung der folgenden Diagramme basiert auf der Verwendung eines 12 bit Residual ADC's für die Messung der Restspannung nach der RunUp-Phase.
 
 Eine gute Einführung in das Thema [Multi-Slope ADC](https://en.wikipedia.org/wiki/Integrating_ADC) gibt es auf Wikipedia
 
@@ -28,7 +28,7 @@ In der Simulation wird für die Betrachtung der Linearität eine Eingangsspannun
 ## Ideal-Fall mit RunDown (Zeitmessung)
 Wenn wir die Eingangswiderstände (Rin, Rref+ und Rref-) und die Vref Spannungen als ideal annehmen, bekommen wir folgende Anweichung. 
 
-12 Bit Resudual ADC
+
 
 integrator.VrefN = -7.04480 <br>
 integrator.VrefP = 7.04480 <br>
@@ -39,10 +39,12 @@ integrator.R_VrefN = 100.0 # k <br>
 integrator.R_VrefP = 100.0 # k <br>
 
 
+12 Bit Residual ADC
 <img src="doc/images/Abweichung_RunDown_Ideal.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
 
 Jetzt verwenden wir mal einen ADC mit einer 16 Bit Auflösung nach der RunUp-Phase und schauen uns die Auflösung an. Wie erwartet, wird die Auflösung deutlich besser. Ich würde bei einem Hardware-Desgin aber versuchen einen schnellen 12 Bit ADC, vielleicht direkt den ADC vom RP2040, zu verwenden.
 
+16 Bit Residual ADC
 <img src="doc/images/Abweichung_RunDown_Ideal_16.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
 
 ## Real-Fall mit RunDown (Zeitmessung)
