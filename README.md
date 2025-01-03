@@ -11,7 +11,7 @@ Der Messzyklus bei einer Taskfrequenz von 10 Mhz (100ns) ist somit ca. 100 ms
 
 Die Simulation unterscheidet grundsätzlich zwei Formen der RunDown-Phase. Einmal eine Zeitmessung nach der RunUp-Phase oder eine Restwert-Messung über einen Residual-ADC nach der RunUp-Phase.
 
-Die Darstellung der folgenden Diagramme basiert auf der Verwendung eines 12 bit Resudual ADC's 
+Die Darstellung der folgenden Diagramme basiert auf der Verwendung eines 12 bit Resudual ADC's für die Messung der Restspannung nach der RunUp-Phase.
 
 Eine gute Einführung in das Thema [Multi-Slope ADC](https://en.wikipedia.org/wiki/Integrating_ADC) gibt es auf Wikipedia
 
@@ -32,9 +32,9 @@ integrator.VrefN = -7.04480 <br>
 integrator.VrefP = 7.04480 <br>
 integrator.ChargingInjection = 0.000 <br>
 
-integrator.R_Vin   = 50.0 # k <br>
-integrator.R_VrefN = 50.0 # k <br>
-integrator.R_VrefP = 50.0 # k <br>
+integrator.R_Vin   = 200.0 # k <br>
+integrator.R_VrefN = 100.0 # k <br>
+integrator.R_VrefP = 100.0 # k <br>
 
 
 <img src="doc/images/Abweichung_RunDown_Ideal.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
