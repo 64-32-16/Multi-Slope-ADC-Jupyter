@@ -33,11 +33,18 @@ class DataCell:
 
 
 class ResidueADC:
-    def __init__(self, cpu, bits):
+    def __init__(self, cpu, bits, inputVolt):
         self.Bits = bits  # wieviele bits hat dieses Reste ADC
+        self.InputVolt = inputVolt # in Volt
         self.CPU = cpu
         self.Vbegin = 0.0
         self.Vend = 0.0
+        self.Resolution = self.InputVolt/pow(2,self.Bits)
+
+    def calc( self, volt):
+        x = round( volt/ self.Resolution, 0)	
+        return (x * self.Resolution)
+
 
     # Liefert die aktuelle Auflösung in uV für diesen Reste ADC
     def GetResolution(self):
@@ -116,42 +123,47 @@ class Integrator:
 
     
     def Calc(self, dt):
+        """
+        Parasitärer Effekt der Schalter:
 
+        Schalter haben Kapazitäten, die abhängig von ihrer Schaltstellung Ladung in den Schaltkreis einspeisen oder abziehen.
+        Die Ladeinjektion wird direkt als zusätzliche Ladung modelliert und nicht durch Kapazitätsanpassung simuliert.
+        """
         
         Iin = 0.0   # Strom durch Rin
         Iref = 0.0  # Strom durch Rref
-        c = self.C *  pow(10, -9)  
-        
-        if (self.SW_Vin == 0 and self.SW_VrefN == 0 and self.SW_VrefP == 0 ):
-            return
+        c = self.C * pow(10, -9)  # Integratorkapazität
+        q_inj = self.ChargingInjection * pow(10, -12)  # Ladeinjektion (in pC)
 
-        # RunDown
-        if (self.SW_Vin == 0 and self.SW_VrefN == 1  ):
-            Iin = 0.0
-            Iref = self.VrefN / ( self.R_VrefN * pow(10,3) )
+        if self.SW_Vin == 0 and self.SW_VrefN == 0 and self.SW_VrefP == 0:
+            return  # Kein aktiver Schalter, keine Berechnung notwendig
 
-        if (self.SW_Vin == 0 and self.SW_VrefP == 1  ):
-            Iin = 0.0
-            Iref = self.VrefP / ( self.R_VrefP * pow(10,3) )
+        # Ströme berechnen
+        if self.SW_Vin == 1:
+            Iin = self.Vin / (self.R_Vin * pow(10, 3))  # Strom durch Vin
 
+        if self.SW_VrefN == 1:
+            Iref = self.VrefN / (self.R_VrefN * pow(10, 3))  # Strom durch VrefN
 
-        # RunUp
-        if (self.SW_Vin == 1 and self.SW_VrefN == 1  ): 
-            Iin = self.Vin / ( self.R_Vin * pow(10,3))
-            Iref = self.VrefN / ( self.R_VrefN * pow(10,3) )
-            c = ( self.C+self.ChargingInjection)*pow(10, -9)
-            
-        if (self.SW_Vin == 1 and self.SW_VrefP == 1 ): 
-            Iin = self.Vin / ( self.R_Vin * pow(10,3))
-            Iref = self.VrefP / ( self.R_VrefP * pow(10,3) )
-            c = (self.C-self.ChargingInjection)*pow(10, -9)
-            
+        if self.SW_VrefP == 1:
+            Iref = self.VrefP / (self.R_VrefP * pow(10, 3))  # Strom durch VrefP
 
-        z = -( (1/c) * ( Iin + Iref) * dt )  
-        self.Vout =  self.Vout + z 
+        # Ladeinjektion direkt als Ladungsänderung modellieren
+        q_total = -(Iin + Iref) * dt  # Gesamte Ladungsänderung durch Ströme
 
-        
-        self.append( dt, self.Vout)
+        # Zusätzliche Ladeinjektion berücksichtigen
+        if self.SW_VrefN == 1: 
+            q_total += q_inj  # Positive Ladeinjektion bei SW_VrefN aktiv
+
+        if self.SW_VrefP == 1: 
+            q_total -= q_inj  # Negative Ladeinjektion bei SW_VrefP aktiv
+
+        # Spannungsänderung berechnen
+        delta_v = q_total / c  # Spannungsänderung durch Gesamtladung
+        self.Vout += delta_v  # Spannung am Integrator aktualisieren
+
+        # Daten speichern
+        self.append(dt, self.Vout)
 
 
     def append( self, dt, vout ):
@@ -260,7 +272,7 @@ class CPU:
         # Wenn ein Reste ADC installiert ist, holen wir uns nur den Rest aus dem Integrator
         # ToDo Anzahl der Bits beim Reste ADC beachten
         if( self.ResidueADC ):
-            self.ResidueADC.Vend = self.Integrator.Vout
+            self.ResidueADC.Vend = self.ResidueADC.calc(self.Integrator.Vout)
             return
         
         self.Vout_Before = self.Integrator.Vout
@@ -296,34 +308,91 @@ class CPU:
         t_short = 0.0   
         
         if( self.WaveForm > 0 ): 
-            t_long = (self.RunUpCnt-( self.RunUpCnt / self.WaveForm)) * self.Tick * pow(10,-6)   
-            t_short = ( self.RunUpCnt / self.WaveForm) * self.Tick * pow(10,-6)   
+            t_long = (self.RunUpCnt  ) * self.Tick * pow(10,-6)   
+            t_short = (  self.WaveForm) * self.Tick * pow(10,-6)   
             
         for a in range(1,self.RunUpCycles+1):
 
+            
             if (self.Integrator.Comp() == 1):
                 self.Integrator.SW_Vin = 1
-                self.Integrator.SW_VrefN = 0
-                self.Integrator.SW_VrefP = 1
-                self.Integrator.Calc( t_long )      
+
                 if  self.WaveForm > 0: 
                     self.Integrator.SW_VrefN = 1
                     self.Integrator.SW_VrefP = 0          
-                    self.Integrator.Calc( t_short )
+                    self.Integrator.Calc( t_short  )
+                
+                self.Integrator.SW_VrefN = 0
+                self.Integrator.SW_VrefP = 1
+                self.Integrator.Calc( t_long )      
+
+
                 self.CntN += 1
             else:
                 self.Integrator.SW_Vin = 1
                 if  self.WaveForm > 0: 
+
                     self.Integrator.SW_VrefN = 0
-                    self.Integrator.SW_VrefP = 1
-                    self.Integrator.Calc( t_short )
+                    self.Integrator.SW_VrefP = 1          
+                    self.Integrator.Calc( t_short )   
+
                 self.Integrator.SW_VrefN = 1
                 self.Integrator.SW_VrefP = 0
-                self.Integrator.Calc( t_long )                
+                self.Integrator.Calc( t_long )                   
+                self.CntP += 1
+                         
+
+    ## RunUp Version 1
+    def RunUpV2( self):
+    
+        # Wenn ein Reste ADC installiert ist, merken wir uns den Begin Wert aus dem Integrator
+        if( self.ResidueADC ):
+            self.ResidueADC.Vbegin = self.Integrator.Vout
+        
+        t_long = (self.RunUpCnt ) * self.Tick * pow(10,-6)   
+        t_short = 0.0   
+        
+        if( self.WaveForm > 0 ): 
+            t_long = (self.RunUpCnt ) * self.Tick * pow(10,-6)   
+            t_short = (  self.WaveForm) * self.Tick * pow(10,-6)   
+            
+        for a in range(1,self.RunUpCycles+1):
+
+            self.Integrator.SW_Vin = 1
+            self.Integrator.SW_VrefN = 0
+            self.Integrator.SW_VrefP = 0   
+            self.Integrator.Calc( t_long ) 
+            self.Integrator.SW_Vin = 0
+
+
+
+            if (self.Integrator.Comp() == 1):
+                if  self.WaveForm > 0.0: 
+                    self.Integrator.SW_VrefN = 1
+                    self.Integrator.SW_VrefP = 0          
+                    self.Integrator.Calc( t_short )
+                
+                self.Integrator.SW_VrefN = 0
+                self.Integrator.SW_VrefP = 1
+                self.Integrator.Calc( t_long )      
+
+
+                self.CntN += 1
+            else:
+                if  self.WaveForm > 0.0: 
+
+                    self.Integrator.SW_VrefN = 0
+                    self.Integrator.SW_VrefP = 1          
+                    self.Integrator.Calc( t_short )   
+
+                self.Integrator.SW_VrefN = 1
+                self.Integrator.SW_VrefP = 0
+                self.Integrator.Calc( t_long )   
+
+        
+                
                 self.CntP += 1
              
-
-
    
 
  
@@ -374,7 +443,7 @@ class CPU:
       
         if( self.RunDown_Sign==0 ):
             x =  ( Np - Nn ) + ( self.RunDownCnt  / self.RunUpCnt )
-            self.VAutoZero = self.VAutoZero * -1.0
+            #self.VAutoZero = self.VAutoZero * -1.0
         else:
              x =  (Np  - Nn ) - ( self.RunDownCnt  / self.RunUpCnt )
              
@@ -389,7 +458,7 @@ class CPU:
             self.Vin = self.Calibration.calibrate( self.Vin ) 
 
         # **** Gesamtzyklen und Resolution berechnen ****
-        TMess = self.Tick * self.RunUpCycles * self.RunUpCycles
+        TMess = self.RunUpCycles * N
         self.Resolution = self.Integrator.VrefP / TMess
 
         # Resolution = Vref / Messzyklen

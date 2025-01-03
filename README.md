@@ -5,12 +5,21 @@ Um die Funktionsweise eines Multi-Slope ADC besser zu verstehen, habe ich eine S
 Die Version ist noch etwas rudimentär, jedoch lassen sich schon unterschiedliche Wave-Formen und unterschiedliche Fehlerquellen simulieren. 
 Mit der Simulation kann gezeigt werden, welche Fehlerquellen ein lineares oder nicht lineares Verhalten haben.
 
-Die Simulation unterscheidet grundsätzlich zwei Formen von der RunDown-Phase. Einmal eine Zeitmessung nach der RunUp-Phase oder eine Restwert-Messung über einen Residual-ADC nach der RunUp-Phase.
+Die RunUp-Phase besteht aktuell aus 3250 Zyklen in den der Integrator geladen wird mit eine Rampelänge von 320 Implusen. Hieraus ergibt sich einen COUNT von 3250 x 320 = 1.040.000 und somit eine theoretische Auflösung von 10V/1.040.000 = ca. 10uV
+
+Der Messzyklus bei einer Taskfrequenz von 10 Mhz (100ns) ist somit ca. 100 ms
+
+Die Simulation unterscheidet grundsätzlich zwei Formen der RunDown-Phase. Einmal eine Zeitmessung nach der RunUp-Phase oder eine Restwert-Messung über einen Residual-ADC nach der RunUp-Phase.
 
 Eine gute Einführung in das Thema [Multi-Slope ADC](https://en.wikipedia.org/wiki/Integrating_ADC) gibt es auf Wikipedia
 
+
+
 # Linearität
 In der Simulation wird für die Betrachtung der Linearität eine Eingangsspannung Vin von -5.0V bis +5.0V in 0.5 V Schritten durchlaufen.
+
+
+<img src="doc/images/Integrator.png" alt="Beschreibung des Bildes" height="750">
 
 
 ## Ideal-Fall mit RunDown (Zeitmessung)
@@ -74,7 +83,24 @@ Habe die Kalibrierung einmal in die Simulation eingbaut. Es kann gezeigt werden,
 
 ## Realer Fall mit Charging-Injection
 
-Wir müssen uns bei einem Multi-Slope ADC nicht nur mit linearen Fehler sondern auch mit nicht linearen Fehlern beschäftigen. Die verwendeten Analogen-Schalter habe ein Eigenschaft die als **Charging-Injection** bezeichnet wird. Diese nicht gewollte Eigenschaft führt zu einem nicht linearen Fehler. In der Simulation kann auch dieser Fall betrachtet werden.
+Wir müssen uns bei einem Multi-Slope ADC nicht nur mit linearen Fehlern sondern auch mit nicht linearen Fehlern beschäftigen. Die verwendeten Analogen-Schalter haben eine Eigenschaft die als **Charging-Injection** bezeichnet wird. Diese nicht gewollte Eigenschaft führt zu einem nicht linearen Fehler. In der Simulation kann auch dieser Fall betrachtet werden.
 
 
 ![Mein Bild](doc/images/Abweichung_RunDown_Charing_Injection.png)
+
+## Mögliche Lösung Charging-Injection
+
+Dieses Problem ist relativ einfach zu verstehen. Druch die unterschiedliche Anzahl der Schalterbewegung in der RunUp-Phase Vref+ und Vref- kommt es zu einer Addition einer parasitären Kapazität der Schalter in den Signalpath. 
+
+### 1. Analoge-Schalter mit geringer Charging Injection
+Bei einem Hardware-Design sollte also ein Analoge-Schalter mit geringer Charging Injection verwendet werden z.B. ADG1211.
+
+
+### 2. Software-Kompensation
+Wir müssen also erreichen, dass die Schalter Vref+ und Vref- gleichmäßig betätigt werden. 
+Die Idee ist nach dem Lesen des Komperators den Schalter einmal, für einen kurzen Zeitraum, in die verkehrte Richtung zu bewegen und dann erst auf die richtige Richtung einzuschwenken, damit sollten die Schalter synchron laufen.
+Das untere Bild zeigt einmal diese Waveform (nur 20 Zyklen):
+
+
+
+
