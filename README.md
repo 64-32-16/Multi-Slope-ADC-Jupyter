@@ -11,15 +11,18 @@ Der Messzyklus bei einer Taskfrequenz von 10 Mhz (100ns) ist somit ca. 100 ms
 
 Die Simulation unterscheidet grundsätzlich zwei Formen der RunDown-Phase. Einmal eine Zeitmessung nach der RunUp-Phase oder eine Restwert-Messung über einen Residual-ADC nach der RunUp-Phase.
 
+Die Darstellung der folgenden Diagramme basiert auf der Verwendung eines 12 bit Resudual ADC's 
+
 Eine gute Einführung in das Thema [Multi-Slope ADC](https://en.wikipedia.org/wiki/Integrating_ADC) gibt es auf Wikipedia
 
+
+<img src="doc/images/Integrator.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
 
 
 # Linearität
 In der Simulation wird für die Betrachtung der Linearität eine Eingangsspannung Vin von -5.0V bis +5.0V in 0.5 V Schritten durchlaufen.
 
 
-<img src="doc/images/Integrator.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
 
 
 ## Ideal-Fall mit RunDown (Zeitmessung)
@@ -34,8 +37,7 @@ integrator.R_VrefN = 50.0 # k <br>
 integrator.R_VrefP = 50.0 # k <br>
 
 
-![Mein Bild](doc/images/Abweichung_RunDown_Ideal.png)
-
+<img src="doc/images/Abweichung_RunDown_Ideal.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
 
 
 ## Real-Fall mit RunDown (Zeitmessung)
