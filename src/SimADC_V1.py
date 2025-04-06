@@ -242,7 +242,7 @@ class CPU:
         self.CntP = 0
         self.Vin = 0.0
         self.Resolution = 0.0
-        self.Tick = 0.1
+        self.Tick = 0.2
         self.Integrator.Reset()
         if( self.ResidueADC ):
             self.ResidueADC.Reset()

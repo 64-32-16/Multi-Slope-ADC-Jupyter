@@ -25,7 +25,7 @@ In der Simulation wird für die Betrachtung der Linearität eine Eingangsspannun
 
 
 
-## Ideal-Fall mit RunDown (Zeitmessung)
+## Ideal-Fall 
 Wenn wir die Eingangswiderstände (Rin, Rref+ und Rref-) und die Vref Spannungen als ideal annehmen, bekommen wir folgende Anweichung. 
 
 
@@ -47,7 +47,7 @@ Jetzt verwenden wir mal einen ADC mit einer 16 Bit Auflösung nach der RunUp-Pha
 16 Bit Residual ADC
 <img src="doc/images/Abweichung_RunDown_Ideal_16.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
 
-## Real-Fall mit RunDown (Zeitmessung)
+## Real-Fall 
 Da wir in der Realität jedoch Abweichungen in dem Widerständs-Array und in der +/-Vref-Spannung bekommen, erhalten wir eine lineare Abweichung. Selbst kleine unterschiede in den Widerständs-Array und +/-Vref-Spannungen führen zur einer linearen Abweichung.
 
 Beispiel:
@@ -56,11 +56,12 @@ Beispiel:
 integrator.VrefP = 7.04480 <br>
 integrator.ChargingInjection = 0.000 <br>
 
-integrator.R_Vin   = 50.0 # k <br>
-**integrator.R_VrefN = 50.01 # k** <br>
-integrator.R_VrefP = 50.00 # k <br>
+integrator.R_Vin   = 200.0 # k <br>
+**integrator.R_VrefP = 100.01 # k** <br>
+integrator.R_VrefN = 100.00 # k <br>
 
-![Mein Bild](doc/images/Abweichung_RunDown_real.png)
+12 Bit Residual ADC
+<img src="doc/images/Abweichung_RunDown_real.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
 
 ## Mögliche Lösungen 
 ### 1. Präzise Widerstände mit geringer Toleranz verwenden
@@ -84,11 +85,13 @@ Messung des Fehlers:
 Einspeisen einer bekannten Spannung (𝑉cal) mit positivem und negativem Eingang.
 Den systematischen Unterschied zwischen den gemessenen und relaen Wert ermitteln und gespeichert.
 
-## Real-Fall mit RunDown (Zeitmessung) und Kalibierung
+## Real-Fall und Kalibierung
 
 Habe die Kalibrierung einmal in die Simulation eingbaut. Es kann gezeigt werden, dass der lineare Fehler verschwindet.
 
-![Mein Bild](doc/images/Abweichung_RunDown_Real_mit_Kalibrierung.png)
+12 Bit Residual ADC
+<img src="doc/images/Abweichung_RunDown_Real_mit_Kalibrierung.png" alt="Beschreibung des Bildes" style="height:400px; width:auto;">
+
 
 ## Realer Fall mit Charging-Injection
 
@@ -106,7 +109,7 @@ Bei einem Hardware-Design sollte also ein Analoge-Schalter mit geringer Charging
 
 
 ### 2. Software-Kompensation
-Wir müssen also erreichen, dass die Schalter Vref+ und Vref- gleichmäßig betätigt werden. 
+Wir müssen also erreichen, dass die Schalter Vref+ und Vref- gleichmäßig betätigt werden, damit sich dieser Effekt ausgeleicht.
 Die Idee ist nach dem Lesen des Komperators den Schalter einmal, für einen kurzen Zeitraum, in die verkehrte Richtung zu bewegen und dann erst auf die richtige Richtung einzuschwenken, damit sollten die Schalter synchron laufen.
 Das untere Bild zeigt einmal diese Waveform (nur 20 Zyklen):
 
