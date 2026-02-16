@@ -124,45 +124,37 @@ class Integrator:
     
     def Calc(self, dt):
         """
-        Parasitärer Effekt der Schalter:
-
-        Schalter haben Kapazitäten, die abhängig von ihrer Schaltstellung Ladung in den Schaltkreis einspeisen oder abziehen.
-        Die Ladeinjektion wird direkt als zusätzliche Ladung modelliert und nicht durch Kapazitätsanpassung simuliert.
+        Parasitärer Effekt der Schalter (Ladeinjektion):
+        Modelliert als direkte Ladungsinjektion, nicht als Kapazitätsänderung.
         """
-        
-        Iin = 0.0   # Strom durch Rin
-        Iref = 0.0  # Strom durch Rref
-        c = self.C * pow(10, -9)  # Integratorkapazität
-        q_inj = self.ChargingInjection * pow(10, -12)  # Ladeinjektion (in pC)
-
         if self.SW_Vin == 0 and self.SW_VrefN == 0 and self.SW_VrefP == 0:
-            return  # Kein aktiver Schalter, keine Berechnung notwendig
+            self.append(dt, self.Vout)
+            return
 
-        # Ströme berechnen
+        C = self.C * 1e-9  # Integratorkapazität in Farad
+        q_inj = self.ChargingInjection * 1e-12  # Ladeinjektion in Coulomb
+        Iin = 0.0
+        Iref = 0.0
+
         if self.SW_Vin == 1:
-            Iin = self.Vin / (self.R_Vin * pow(10, 3))  # Strom durch Vin
+            Iin = self.Vin / (self.R_Vin * 1e3)
 
         if self.SW_VrefN == 1:
-            Iref = self.VrefN / (self.R_VrefN * pow(10, 3))  # Strom durch VrefN
+            Iref += self.VrefN / (self.R_VrefN * 1e3)
 
         if self.SW_VrefP == 1:
-            Iref = self.VrefP / (self.R_VrefP * pow(10, 3))  # Strom durch VrefP
+            Iref += self.VrefP / (self.R_VrefP * 1e3)
 
-        # Ladeinjektion direkt als Ladungsänderung modellieren
-        delta_v = -((Iin + Iref) * dt)/c  # Gesamte Ladungsänderung durch Ströme
-        
-        # Zusätzliche Ladeinjektion berücksichtigen
-        if self.SW_VrefN == 1: 
-            delta_v -= q_inj/ (35 * pow(10,-12))  # Positive Ladeinjektion bei SW_VrefN aktiv
+        q_total = -(Iin + Iref) * dt  # Gesamtladung
 
-        if self.SW_VrefP == 1: 
-            delta_v += q_inj/ (35 * pow(10,-12))    # Negative Ladeinjektion bei SW_VrefP aktiv
+        # Ladeinjektion berücksichtigen, nur wenn genau ein Schalter aktiv ist
+        if self.SW_VrefN == 1 and self.SW_VrefP == 0:
+            q_total += q_inj
+        elif self.SW_VrefP == 1 and self.SW_VrefN == 0:
+            q_total -= q_inj
 
-        # Spannungsänderung berechnen
-       
-        self.Vout += delta_v  # Spannung am Integrator aktualisieren
-
-        # Daten speichern
+        delta_v = q_total / C
+        self.Vout += delta_v
         self.append(dt, self.Vout)
 
 
@@ -242,7 +234,7 @@ class CPU:
         self.CntP = 0
         self.Vin = 0.0
         self.Resolution = 0.0
-        self.Tick = 0.1
+        self.Tick = 0.2
         self.Integrator.Reset()
         if( self.ResidueADC ):
             self.ResidueADC.Reset()
@@ -322,7 +314,7 @@ class CPU:
                     self.Integrator.SW_VrefP = 0          
                     self.Integrator.Calc( t_short  )
                 
-                self.Integrator.SW_VrefN = 0 # zwischen Kompensation
+                self.Integrator.SW_VrefN = 0
                 self.Integrator.SW_VrefP = 1
                 self.Integrator.Calc( t_long )      
 
@@ -342,7 +334,8 @@ class CPU:
                 self.CntP += 1
                          
 
-    ## RunUp Version 1
+    ## RunUp Version 2
+    ## Version kommt aus dem Parent
     def RunUpV2( self):
     
         # Wenn ein Reste ADC installiert ist, merken wir uns den Begin Wert aus dem Integrator
@@ -351,49 +344,48 @@ class CPU:
         
         t_long = (self.RunUpCnt ) * self.Tick * pow(10,-6)   
         t_short = 0.0   
-        
         if( self.WaveForm > 0 ): 
-            t_long = (self.RunUpCnt ) * self.Tick * pow(10,-6)   
             t_short = (  self.WaveForm) * self.Tick * pow(10,-6)   
             
         for a in range(1,self.RunUpCycles+1):
 
+            # Phase 1 Vin == 1
+            # Integration
             self.Integrator.SW_Vin = 1
             self.Integrator.SW_VrefN = 0
             self.Integrator.SW_VrefP = 0   
             self.Integrator.Calc( t_long ) 
+            
             self.Integrator.SW_Vin = 0
+           
+            # KOMPENSATION
+            self.Integrator.SW_VrefN = 0
+            self.Integrator.SW_VrefP = 0
+            self.Integrator.Calc( t_short ) 
 
-
-
+            # Deintegration
             if (self.Integrator.Comp() == 1):
-                if  self.WaveForm > 0.0: 
-                    self.Integrator.SW_VrefN = 1
-                    self.Integrator.SW_VrefP = 0          
-                    self.Integrator.Calc( t_short )
                 
                 self.Integrator.SW_VrefN = 0
                 self.Integrator.SW_VrefP = 1
                 self.Integrator.Calc( t_long )      
 
-
+ 
                 self.CntN += 1
             else:
-                if  self.WaveForm > 0.0: 
-
-                    self.Integrator.SW_VrefN = 0
-                    self.Integrator.SW_VrefP = 1          
-                    self.Integrator.Calc( t_short )   
 
                 self.Integrator.SW_VrefN = 1
                 self.Integrator.SW_VrefP = 0
                 self.Integrator.Calc( t_long )   
-
-        
                 
+               
+                        
                 self.CntP += 1
-             
-   
+  
+            # Kompensation
+            self.Integrator.SW_VrefN = 1
+            self.Integrator.SW_VrefP = 1
+            self.Integrator.Calc( t_short )   
 
  
 
@@ -401,17 +393,25 @@ class CPU:
         
 
         N = self.CntP  + self.CntN        # Gesamt Count   
-        Np = self.CntP    # Offset Korrektur
-        Nn = self.CntN    # Offset Korrektur
+        Np = self.CntN    
+        Nn = self.CntP    
      
 
         #d = (self.RunDownCnt )
 
 
-        #x1 = (Np-Nn) + ( d / self.RunUpCnt )
-        #x2 = (Np + Nn ) 
-        #self.Vin = self.Integrator.VrefN *  (x1 / x2 )
-        #return
+        x1 = (Np-Nn)
+        x2 = (Np + Nn ) 
+        self.V1 = self.Integrator.VrefN *  (x1 / x2 ) * (2)
+        
+        self.V2 = ((self.Integrator.R_Vin* pow(10,3)) * (self.Integrator.C*pow(10,-9)  * (self.ResidueADC.Vend) ) /  ((self.RunUpCnt) * pow(10,-6)/10 * N))
+        self.V2 = self.V2/2.0
+        
+        self.Vin = self.V1 - (self.V2)
+        
+        if( self.Calibration):
+            self.Vin = self.Calibration.calibrate( self.Vin ) 
+        return
 
 
 
